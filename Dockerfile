@@ -6,7 +6,8 @@ ADD clair ./clair
 ADD clair-scanner-add-podman-support.patch .
 ADD clair-remove-usage-of-deprecated-handler.patch .
 RUN patch -p1 < clair-scanner-add-podman-support.patch && patch -p0 < clair-remove-usage-of-deprecated-handler.patch
-RUN cd ./clair && go mod init && go mod tidy && cd .. && go mod tidy && go build
+RUN cd ./clair && go mod init && go mod tidy
+RUN go mod tidy && go build
 
 FROM debian:bullseye
 RUN apt-get update -y && apt-get install -y fuse-overlayfs iproute2 podman buildah skopeo containers-storage
