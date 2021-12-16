@@ -1,4 +1,4 @@
-FROM golang:1.16-bullseye AS builder
+FROM docker.io/library/golang:1.16-bullseye AS builder
 WORKDIR /go/src/clair-scanner
 RUN apt-get update -y && apt-get install -y build-essential liblvm2-dev libbtrfs-dev libgpgme-dev
 ADD clair-scanner .
@@ -9,7 +9,7 @@ RUN patch -p1 < clair-scanner-add-podman-support.patch && patch -p0 < clair-remo
 RUN cd ./clair && go mod init && go mod tidy
 RUN go mod tidy && go build
 
-FROM debian:bullseye
+FROM docker.io/library/debian:bullseye
 RUN apt-get update -y && apt-get install -y fuse-overlayfs iproute2 podman buildah skopeo containers-storage
 
 RUN useradd podman; \
