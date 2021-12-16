@@ -18,11 +18,11 @@ diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
 -	docker := createDockerClient()
 +	connText := createDockerClient()
 +	reader, writer := io.Pipe()
-+
++	format := "docker-archive"
 +	compress := false
  
 -	imageReader, err := docker.ImageSave(context.Background(), []string{imageName})
-+	err := images.Export(connText, imageName, writer, nil, &compress)
++	err := images.Export(connText, imageName, writer, &format, &compress)
  	if err != nil {
 -		logger.Fatalf("Could not save Docker image [%s]: %v", imageName, err)
 +		logger.Fatalf("Could not export Docker image [%s]: %v", imageName, err)
