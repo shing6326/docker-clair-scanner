@@ -10,7 +10,7 @@ RUN cd ./clair && go mod init && go mod tidy
 RUN go mod tidy && go build
 
 FROM docker.io/library/debian:bullseye
-RUN apt-get update -y && apt-get install -y fuse-overlayfs iproute2 podman buildah skopeo containers-storage
+RUN apt-get update -y && apt-get install -y fuse-overlayfs iproute2 podman buildah skopeo containers-storage ca-certificates
 
 RUN useradd podman; \
 echo podman:10000:5000 > /etc/subuid; \
@@ -33,3 +33,4 @@ RUN mkdir -p /var/lib/shared/overlay-images /var/lib/shared/overlay-layers /var/
 ENV _CONTAINERS_USERNS_CONFIGURED=""
 
 COPY --from=builder /go/src/clair-scanner/clair-scanner /usr/local/bin
+RUN touch clair-whitelist.yml
