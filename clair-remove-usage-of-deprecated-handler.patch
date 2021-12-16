@@ -1,0 +1,20 @@
+diff -ruN clair.orig/api/v1/routes.go clair/api/v1/routes.go
+--- clair.orig/api/v1/routes.go	2021-12-16 23:30:29.926467108 +0800
++++ clair/api/v1/routes.go	2021-12-16 23:37:31.646460904 +0800
+@@ -23,7 +23,7 @@
+ 	"strings"
+ 
+ 	"github.com/julienschmidt/httprouter"
+-	"github.com/prometheus/client_golang/prometheus"
++	"github.com/prometheus/client_golang/prometheus/promhttp"
+ 	log "github.com/sirupsen/logrus"
+ 
+ 	"github.com/quay/clair/v2"
+@@ -497,6 +497,6 @@
+ }
+ 
+ func getMetrics(w http.ResponseWriter, r *http.Request, p httprouter.Params, ctx *context) (string, int) {
+-	prometheus.Handler().ServeHTTP(w, r)
++	prometheus.promhttp().ServeHTTP(w, r)
+ 	return getMetricsRoute, 0
+ }
