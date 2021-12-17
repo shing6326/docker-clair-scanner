@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import json
@@ -58,7 +58,7 @@ class gitlabReportConverter:
                     ]
                 }
             )
-            self.result['vulnerabilities'].append(
+            self.result['remediations'].append(
                 {
                     'fixes': [
                         {
