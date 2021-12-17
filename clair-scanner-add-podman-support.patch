@@ -92,7 +92,7 @@ diff -ruN clair-scanner.orig/utils.go clair-scanner/utils.go
 +			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 +				return err
 +			}
-+			if err := os.Symlink(filepath.Join(target, header.Linkname), path); err != nil {
++			if err := os.Symlink(header.Linkname, path); err != nil {
 +				return err
 +			}
 +		default:
