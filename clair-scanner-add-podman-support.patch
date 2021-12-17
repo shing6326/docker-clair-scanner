@@ -1,5 +1,21 @@
---- clair-scanner.orig/docker.go	2021-12-17 09:34:57.465975718 +0800
-+++ clair-scanner/docker.go	2021-12-17 09:41:27.809360196 +0800
+diff -ruN clair-scanner.orig/clair.go clair-scanner/clair.go
+--- clair-scanner.orig/clair.go	2021-12-17 10:10:46.340957666 +0800
++++ clair-scanner/clair.go	2021-12-17 10:12:12.419735780 +0800
+@@ -34,9 +34,9 @@
+ 		logger.Infof("Analyzing %s", layerIds[i])
+ 
+ 		if i > 0 {
+-			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+"/layer.tar", layerIds[i], layerIds[i-1])
++			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+".tar", layerIds[i], layerIds[i-1])
+ 		} else {
+-			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+"/layer.tar", layerIds[i], "")
++			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+".tar", layerIds[i], "")
+ 		}
+ 	}
+ }
+diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
+--- clair-scanner.orig/docker.go	2021-12-17 10:10:46.340957666 +0800
++++ clair-scanner/docker.go	2021-12-17 10:12:53.908113026 +0800
 @@ -1,10 +1,10 @@
  package main
  
@@ -47,3 +63,12 @@
  	}
  }
  
+@@ -46,7 +52,7 @@
+ 
+ 	var layers []string
+ 	for _, layer := range manifest[0].Layers {
+-		layers = append(layers, strings.TrimSuffix(layer, "/layer.tar"))
++		layers = append(layers, strings.TrimSuffix(layer, ".tar"))
+ 	}
+ 	return layers
+ }
