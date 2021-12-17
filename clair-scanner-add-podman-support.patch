@@ -1,92 +1,49 @@
-diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
---- clair-scanner.orig/docker.go	2021-12-16 23:31:33.206466177 +0800
-+++ clair-scanner/docker.go	2021-12-17 00:26:58.336417261 +0800
-@@ -7,7 +7,8 @@
+--- clair-scanner.orig/docker.go	2021-12-17 09:34:57.465975718 +0800
++++ clair-scanner/docker.go	2021-12-17 09:41:27.809360196 +0800
+@@ -1,10 +1,10 @@
+ package main
+ 
+ import (
+-	"context"
+ 	"encoding/json"
+ 	"io"
  	"os"
++	"os/exec"
  	"strings"
  
--	"github.com/docker/docker/client"
-+	"github.com/containers/libpod/v2/pkg/bindings"
-+	"github.com/containers/libpod/v2/pkg/bindings/images"
- )
- 
- // TODO Add support for older version of docker
-@@ -18,26 +19,31 @@
+ 	"github.com/docker/docker/client"
+@@ -18,17 +18,23 @@
  
  // saveDockerImage saves Docker image to temorary folder
  func saveDockerImage(imageName string, tmpPath string) {
 -	docker := createDockerClient()
-+	connText := createDockerClient()
-+	reader, writer := io.Pipe()
-+	format := "docker-archive"
-+	compress := false
- 
+-
 -	imageReader, err := docker.ImageSave(context.Background(), []string{imageName})
-+	err := images.Export(connText, imageName, writer, &format, &compress)
- 	if err != nil {
+-	if err != nil {
 -		logger.Fatalf("Could not save Docker image [%s]: %v", imageName, err)
-+		logger.Fatalf("Could not export Docker image [%s]: %v", imageName, err)
- 	}
- 
+-	}
+-
 -	defer imageReader.Close()
 -
 -	if err = untar(imageReader, tmpPath); err != nil {
-+	if err = untar(reader, tmpPath); err != nil {
- 		logger.Fatalf("Could not save Docker image: could not untar [%s]: %v", imageName, err)
+-		logger.Fatalf("Could not save Docker image: could not untar [%s]: %v", imageName, err)
++	
++	reader, writer := io.Pipe()
++	defer writer.Close()
++	
++	cmd := exec.Command("bash","-c", "podman save " + imageName)
++	cmd.Stdout = writer
++
++	go func() {
++		defer reader.Close()
++
++		if err := untar(reader, tmpPath); err != nil {
++			logger.Fatalf("Could not save Docker image: could not untar [%s]: %v", imageName, err)
++		}
++	}()
++	
++	if err := cmd.Run(); err != nil {
++		logger.Fatalf("Could not run the podman command: %s\n", err)
  	}
  }
  
--func createDockerClient() client.APIClient {
--	docker, err := client.NewEnvClient()
-+func createDockerClient() context.Context {
-+	sock_dir := os.Getenv("XDG_RUNTIME_DIR")
-+	socket := "unix:" + sock_dir + "/podman/podman.sock"
-+
-+	// Connect to Podman socket
-+	connText, err := bindings.NewConnection(context.Background(), socket)
- 	if err != nil {
--		logger.Fatalf("Could not create a Docker client: %v", err)
-+		logger.Fatalf("Could not connect to podman socket %s: %v", socket, err)
- 	}
--	return docker
-+	return connText
- }
- 
- // getImageLayerIds reads LayerIDs from the manifest.json file
-@@ -46,7 +52,7 @@
- 
- 	var layers []string
- 	for _, layer := range manifest[0].Layers {
--		layers = append(layers, strings.TrimSuffix(layer, "/layer.tar"))
-+		layers = append(layers, strings.TrimSuffix(layer, ".tar"))
- 	}
- 	return layers
- }
-diff -ruN clair-scanner.orig/go.mod clair-scanner/go.mod
---- clair-scanner.orig/go.mod	2021-12-16 23:31:33.206466177 +0800
-+++ clair-scanner/go.mod	2021-12-17 00:27:31.856416768 +0800
-@@ -2,16 +2,15 @@
- 
- go 1.14
- 
-+replace github.com/coreos/clair => ./clair
-+
- require (
- 	github.com/Microsoft/go-winio v0.4.5
- 	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a
- 	github.com/coreos/clair v2.0.7+incompatible
- 	github.com/coreos/pkg v0.0.0-20160727233714-3ac0863d7acf
- 	github.com/davecgh/go-spew v1.1.0
--	github.com/docker/distribution v2.6.2+incompatible
--	github.com/docker/docker v1.13.1
--	github.com/docker/go-connections v0.3.0
--	github.com/docker/go-units v0.3.2
-+	github.com/containers/libpod/v2 v2.0.4
- 	github.com/fernet/fernet-go v0.0.0-20151007213151-1b2437bc582b
- 	github.com/golang/protobuf v0.0.0-20170920220647-130e6b02ab05
- 	github.com/jawher/mow.cli v1.0.2
-@@ -36,3 +35,4 @@
- 	golang.org/x/tools v0.0.0-20200624225443-88f3c62a19ff // indirect
- 	gopkg.in/yaml.v2 v2.0.0-20170812160011-eb3733d160e7
- )
-+
