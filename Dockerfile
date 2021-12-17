@@ -15,4 +15,5 @@ FROM quay.io/podman/stable
 RUN dnf install -y iproute findutils && \
     dnf clean all && \
     rm -rf /var/cache/yum
-COPY --from=builder /go/src/clair-scanner/clair-scanner /usr/local/bin
+COPY --from=builder /go/src/clair-scanner/clair-scanner /usr/local/bin/
+ADD gitlab-report-converter /usr/local/bin/

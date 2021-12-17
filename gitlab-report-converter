@@ -1,0 +1,76 @@
+#!/usr/bin/env python
+
+import sys
+import json
+import os
+
+class gitlabReportConverter:
+
+    vulnerabilities = []
+    result = {'version': '2.3',
+              'vulnerabilities': [],
+              'remediations': []
+              }
+
+    def __init__(self):
+        input = sys.stdin.read()
+        self.clair_data = json.loads(input)
+        self.addVulerability()
+        self.printJson()
+
+    def addVulerability(self):
+        for v in self.clair_data['vulnerabilities']:
+            self.result['vulnerabilities'].append(
+                {
+                    'category': 'container_scanning',
+                    'message': v['vulnerability'] + ' in ' + v['featurename'],
+                    'description': v['vulnerability'] + ' in ' + v['featurename'],
+                    'cve':  v['vulnerability'],
+                    'severity': v['severity'],
+                    'confidence': 'Unknown',
+                    'solution': 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby'],
+                    'scanner': {
+                        'id': 'clair',
+                        'name': 'clair'
+                    },
+                    'location': {
+                        'dependency': {
+                            'package': {
+                                'name': v['featurename']
+                            },
+                            'version': v['featureversion']
+                        },
+                        'operating_system': v['namespace'],
+                        'image': os.environ['CI_REGISTRY_IMAGE'] + ':' + os.environ['CI_COMMIT_SHORT_SHA']
+                    },
+                    'identifiers': [
+                        {
+                            'type': 'cve',
+                            'name': v['vulnerability'],
+                            'value': v['vulnerability'],
+                            'url': v['link']
+                        }
+                    ],
+                    'links': [
+                        {
+                            'url': v['link']
+                        }
+                    ]
+                }
+            )
+            self.result['vulnerabilities'].append(
+                {
+                    'fixes': [
+                        {
+                            'cve': v['vulnerability']
+                        }
+                    ],
+                    'summary': 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby'],
+                    'diff': ''
+                }
+            )
+
+    def printJson(self):
+        print(json.dumps(self.result, indent=2))
+
+gitlabReportConverter()
