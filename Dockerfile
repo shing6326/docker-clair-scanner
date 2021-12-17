@@ -13,5 +13,7 @@ RUN make build
 
 FROM quay.io/podman/stable
 RUN dnf install -y iproute && \
+    dnf clean all && \
+    rm -rf /var/cache/yum && \
     touch clair-whitelist.yml
 COPY --from=builder /go/src/clair-scanner/clair-scanner /usr/local/bin
