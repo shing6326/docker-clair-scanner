@@ -3,6 +3,7 @@
 import sys
 import json
 import os
+import requests
 
 class gitlabReportConverter:
 
@@ -20,15 +21,22 @@ class gitlabReportConverter:
 
     def addVulerability(self):
         for v in self.clair_data['vulnerabilities']:
+            try:
+                response = requests.get('https://cve.circl.lu/api/cve/' + v['vulnerability'])
+                json = response.json()
+                description = json['summary']
+            except:
+                description = v['vulnerability'] + ' vulnerability in ' + v['featurename'] + ' package'
+            solution = 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby']
             self.result['vulnerabilities'].append(
                 {
                     'category': 'container_scanning',
-                    'message': v['vulnerability'] + ' in ' + v['featurename'],
-                    'description': v['vulnerability'] + ' in ' + v['featurename'],
+                    'message': description,
+                    'description': description,
                     'cve':  v['vulnerability'],
                     'severity': v['severity'],
                     'confidence': 'Unknown',
-                    'solution': 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby'],
+                    'solution': solution,
                     'scanner': {
                         'id': 'clair',
                         'name': 'clair'
@@ -65,8 +73,8 @@ class gitlabReportConverter:
                             'cve': v['vulnerability']
                         }
                     ],
-                    'summary': 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby'],
-                    'diff': ''
+                    'summary': solution,
+                    'diff': 'Unknown'
                 }
             )
 
