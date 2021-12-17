@@ -1,6 +1,6 @@
 diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
 --- clair-scanner.orig/docker.go	2021-12-17 12:03:34.078703773 +0800
-+++ clair-scanner/docker.go	2021-12-17 12:06:36.171286554 +0800
++++ clair-scanner/docker.go	2021-12-17 14:33:41.985199895 +0800
 @@ -1,10 +1,10 @@
  package main
  
@@ -50,34 +50,52 @@ diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
  
 diff -ruN clair-scanner.orig/utils.go clair-scanner/utils.go
 --- clair-scanner.orig/utils.go	2021-12-17 12:03:34.079703781 +0800
-+++ clair-scanner/utils.go	2021-12-17 12:11:49.334008633 +0800
-@@ -76,14 +76,23 @@
- 			}
- 			continue
++++ clair-scanner/utils.go	2021-12-17 14:54:31.787366952 +0800
+@@ -66,23 +66,34 @@
  		}
+ 
+ 		path := filepath.Join(target, header.Name)
+-		if !strings.HasPrefix(path, filepath.Clean(target) + string(os.PathSeparator)) {
++		if !strings.HasPrefix(path, filepath.Clean(target)+string(os.PathSeparator)) {
+ 			return fmt.Errorf("%s: illegal file path", header.Name)
+ 		}
+-		info := header.FileInfo()
+-		if info.IsDir() {
+-			if err = os.MkdirAll(path, info.Mode()); err != nil {
++		switch header.Typeflag {
++		case tar.TypeDir:
++			if err := os.MkdirAll(path, 0755); err != nil {
+ 				return err
+ 			}
+-			continue
+-		}
 -
 -		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
 -		if err != nil {
-+		// create subdirectory of all files
-+		if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
- 			return err
- 		}
+-			return err
+-		}
 -		defer file.Close()
 -		if _, err = io.Copy(file, tarReader); err != nil {
--			return err
-+		if header.Typeflag == tar.TypeReg {
-+			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
++		case tar.TypeReg, tar.TypeRegA:
++			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
++				return err
++			}
++			file, err := os.Create(path)
 +			if err != nil {
 +				return err
 +			}
 +			defer file.Close()
-+			if _, err = io.Copy(file, tarReader); err != nil {
++			if _, err := io.Copy(file, tarReader); err != nil {
 +				return err
 +			}
-+		} else if header.Typeflag == tar.TypeSymlink {
-+			if err := os.Symlink(header.Linkname, path); err != nil {
-+                return err
-+            }
++		case tar.TypeSymlink:
++			if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
++				return err
++			}
++			if err := os.Symlink(filepath.Join(target, header.Linkname), path); err != nil {
++				return err
++			}
++		default:
+ 			return err
  		}
  	}
- 	return nil
