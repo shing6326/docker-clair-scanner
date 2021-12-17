@@ -12,8 +12,7 @@ RUN cd ./clair && \
 RUN make build
 
 FROM quay.io/podman/stable
-RUN dnf install -y iproute && \
+RUN dnf install -y iproute findutils && \
     dnf clean all && \
-    rm -rf /var/cache/yum && \
-    touch clair-whitelist.yml
+    rm -rf /var/cache/yum
 COPY --from=builder /go/src/clair-scanner/clair-scanner /usr/local/bin
