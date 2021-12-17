@@ -1,21 +1,6 @@
-diff -ruN clair-scanner.orig/clair.go clair-scanner/clair.go
---- clair-scanner.orig/clair.go	2021-12-17 10:10:46.340957666 +0800
-+++ clair-scanner/clair.go	2021-12-17 10:12:12.419735780 +0800
-@@ -34,9 +34,9 @@
- 		logger.Infof("Analyzing %s", layerIds[i])
- 
- 		if i > 0 {
--			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+"/layer.tar", layerIds[i], layerIds[i-1])
-+			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+".tar", layerIds[i], layerIds[i-1])
- 		} else {
--			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+"/layer.tar", layerIds[i], "")
-+			analyzeLayer(clairURL, tmpPath+"/"+layerIds[i]+".tar", layerIds[i], "")
- 		}
- 	}
- }
 diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
---- clair-scanner.orig/docker.go	2021-12-17 10:10:46.340957666 +0800
-+++ clair-scanner/docker.go	2021-12-17 10:12:53.908113026 +0800
+--- clair-scanner.orig/docker.go	2021-12-17 12:03:34.078703773 +0800
++++ clair-scanner/docker.go	2021-12-17 12:06:36.171286554 +0800
 @@ -1,10 +1,10 @@
  package main
  
@@ -63,12 +48,36 @@ diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
  	}
  }
  
-@@ -46,7 +52,7 @@
- 
- 	var layers []string
- 	for _, layer := range manifest[0].Layers {
--		layers = append(layers, strings.TrimSuffix(layer, "/layer.tar"))
-+		layers = append(layers, strings.TrimSuffix(layer, ".tar"))
+diff -ruN clair-scanner.orig/utils.go clair-scanner/utils.go
+--- clair-scanner.orig/utils.go	2021-12-17 12:03:34.079703781 +0800
++++ clair-scanner/utils.go	2021-12-17 12:11:49.334008633 +0800
+@@ -76,14 +76,23 @@
+ 			}
+ 			continue
+ 		}
+-
+-		file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
+-		if err != nil {
++		// create subdirectory of all files
++		if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+ 			return err
+ 		}
+-		defer file.Close()
+-		if _, err = io.Copy(file, tarReader); err != nil {
+-			return err
++		if header.Typeflag == tar.TypeReg {
++			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, info.Mode())
++			if err != nil {
++				return err
++			}
++			defer file.Close()
++			if _, err = io.Copy(file, tarReader); err != nil {
++				return err
++			}
++		} else if header.Typeflag == tar.TypeSymlink {
++			if err := os.Symlink(header.Linkname, path); err != nil {
++                return err
++            }
+ 		}
  	}
- 	return layers
- }
+ 	return nil
