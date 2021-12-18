@@ -24,7 +24,7 @@ class gitlabReportConverter:
                  },
                  'type': 'container_scanning',
                  'status': 'success',
-                 'start_time': datetime.now().isoformat(timespec='seconds'),
+                 'start_time': os.environ['CI_JOB_STARTED_AT'],
                  'end_time': datetime.now().isoformat(timespec='seconds')
                }
              }
@@ -50,7 +50,6 @@ class gitlabReportConverter:
                     'category': 'container_scanning',
                     'message': description,
                     'description': description,
-                    'cve':  v['vulnerability'],
                     'severity': v['severity'],
                     'confidence': 'Unknown',
                     'solution': solution,
