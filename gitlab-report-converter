@@ -25,7 +25,7 @@ class gitlabReportConverter:
                  'type': 'container_scanning',
                  'status': 'success',
                  'start_time': os.environ['CI_JOB_STARTED_AT'],
-                 'end_time': datetime.now().isoformat(timespec='seconds')
+                 'end_time': datetime.now().isoformat(timespec='seconds') + 'Z'
                }
              }
 
