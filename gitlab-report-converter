@@ -4,11 +4,12 @@ import sys
 import json
 import os
 import requests
+from datetime import datetime
 
 class gitlabReportConverter:
 
     vulnerabilities = []
-    result = { 'version': '2.3',
+    result = { 'version': '3.0.0',
                'vulnerabilities': [],
                'remediations': [],
                'scan': {
@@ -21,7 +22,10 @@ class gitlabReportConverter:
                    },
                    'version': 'latest'
                  },
-                 'type': 'container_scanning'
+                 'type': 'container_scanning',
+                 'status': 'success',
+                 'start_time': datetime.now().isoformat(timespec='seconds'),
+                 'end_time': datetime.now().isoformat(timespec='seconds')
                }
              }
 
@@ -40,6 +44,7 @@ class gitlabReportConverter:
             except:
                 description = v['vulnerability'] + ' vulnerability in ' + v['featurename'] + ' package'
             solution = 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby']
+            self.result['scan']['status'] = 'failure'
             self.result['vulnerabilities'].append(
                 {
                     'category': 'container_scanning',
