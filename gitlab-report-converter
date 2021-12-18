@@ -8,10 +8,22 @@ import requests
 class gitlabReportConverter:
 
     vulnerabilities = []
-    result = {'version': '2.3',
-              'vulnerabilities': [],
-              'remediations': []
-              }
+    result = { 'version': '2.3',
+               'vulnerabilities': [],
+               'remediations': [],
+               'scan': {
+                 'scanner': {
+                   'id': 'clair',
+                   'name': 'clair',
+                   'url': 'https://github.com/quay/clair',
+                   'vendor': {
+                     'name': 'Red Hat'
+                   },
+                   'version': 'latest'
+                 },
+                 'type': 'container_scanning'
+               }
+             }
 
     def __init__(self):
         input = sys.stdin.read()
