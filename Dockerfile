@@ -6,8 +6,8 @@ ADD clair ./clair
 ADD clair-scanner-add-podman-support.patch .
 RUN patch -p1 < clair-scanner-add-podman-support.patch
 RUN cd ./clair && \
-    go mod tidy && \
-    make build
+    go mod tidy
+RUN make build
 
 FROM quay.io/podman/stable
 RUN dnf install -y iproute findutils python-requests && \
