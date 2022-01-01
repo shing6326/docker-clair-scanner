@@ -5,8 +5,7 @@ ADD clair-scanner .
 ADD clair ./clair
 ADD clair-scanner-add-podman-support.patch .
 RUN patch -p1 < clair-scanner-add-podman-support.patch
-RUN cd ./clair && \
-    go mod tidy
+RUN go mod tidy
 RUN make build
 
 FROM quay.io/podman/stable
