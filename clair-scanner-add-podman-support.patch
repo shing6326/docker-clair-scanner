@@ -123,3 +123,15 @@ diff -ruN clair-scanner.orig/utils.go clair-scanner/utils.go
  			return err
  		}
  	}
+diff -ruN clair-scanner.orig/go.mod clair-scanner/go.mod
+--- clair-scanner.orig/go.mod
++++ clair-scanner/go.mod
+@@ -18,7 +18,7 @@ require (
+ 	github.com/julienschmidt/httprouter v1.1.0
+ 	github.com/mattn/go-runewidth v0.0.2
+ 	github.com/mattn/goveralls v0.0.6 // indirect
+-	github.com/matttproud/golang_protobuf_extensions v1.0.0
++	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
+ 	github.com/mbndr/logo v0.0.0-20170922150818-2cf79af92583
+ 	github.com/olekukonko/tablewriter v0.0.0-20180105111133-96aac992fc8b
+ 	github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c

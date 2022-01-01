@@ -43,7 +43,7 @@ class gitlabReportConverter:
                 description = json['summary']
             except:
                 description = v['vulnerability'] + ' vulnerability in ' + v['featurename'] + ' package'
-            solution = 'Upgrade ' + v['featurename'] + ' to ' + v['fixedby']
+            solution = 'Refer to the links for details'
             self.result['scan']['status'] = 'failure'
             self.result['vulnerabilities'].append(
                 {
