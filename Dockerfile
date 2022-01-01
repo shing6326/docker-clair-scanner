@@ -2,7 +2,6 @@ FROM docker.io/library/golang:1.16-bullseye AS builder
 WORKDIR /go/src/clair-scanner
 RUN apt-get update -y && apt-get install -y build-essential liblvm2-dev libbtrfs-dev libgpgme-dev
 ADD clair-scanner .
-ADD clair ./clair
 ADD clair-scanner-add-podman-support.patch .
 RUN patch -p1 < clair-scanner-add-podman-support.patch
 RUN go mod tidy

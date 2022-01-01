@@ -1,7 +1,3 @@
-[submodule "clair"]
-	path = clair
-	url = https://github.com/quay/clair.git
-	branch = v2.1.7
 [submodule "clair-scanner"]
 	path = clair-scanner
 	url = https://github.com/arminc/clair-scanner.git
