@@ -1,6 +1,15 @@
 diff -ruN clair-scanner.orig/clair.go clair-scanner/clair.go
---- clair-scanner.orig/clair.go	2021-12-17 12:03:34.078703773 +0800
-+++ clair-scanner/clair.go	2021-12-17 15:50:21.033503978 +0800
+--- clair-scanner.orig/clair.go	2022-01-01 20:08:22.541401259 +0800
++++ clair-scanner/clair.go	2022-01-01 20:55:28.561359685 +0800
+@@ -7,7 +7,7 @@
+ 	"io/ioutil"
+ 	"net/http"
+ 
+-	"github.com/coreos/clair/api/v1"
++	"github.com/quay/clair/v2/api/v1"
+ )
+ 
+ const (
 @@ -34,9 +34,9 @@
  		logger.Infof("Analyzing %s", layerIds[i])
  
@@ -14,8 +23,8 @@ diff -ruN clair-scanner.orig/clair.go clair-scanner/clair.go
  	}
  }
 diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
---- clair-scanner.orig/docker.go	2021-12-17 12:03:34.078703773 +0800
-+++ clair-scanner/docker.go	2021-12-17 15:50:05.491387264 +0800
+--- clair-scanner.orig/docker.go	2022-01-01 20:08:22.541401259 +0800
++++ clair-scanner/docker.go	2022-01-01 20:55:43.771359462 +0800
 @@ -1,10 +1,10 @@
  package main
  
@@ -33,31 +42,28 @@ diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
  // saveDockerImage saves Docker image to temorary folder
  func saveDockerImage(imageName string, tmpPath string) {
 -	docker := createDockerClient()
--
+ 
 -	imageReader, err := docker.ImageSave(context.Background(), []string{imageName})
 -	if err != nil {
 -		logger.Fatalf("Could not save Docker image [%s]: %v", imageName, err)
 -	}
--
--	defer imageReader.Close()
--
--	if err = untar(imageReader, tmpPath); err != nil {
--		logger.Fatalf("Could not save Docker image: could not untar [%s]: %v", imageName, err)
-+	
 +	reader, writer := io.Pipe()
 +	defer writer.Close()
-+	
++
 +	cmd := exec.Command("bash","-c", "podman save " + imageName)
 +	cmd.Stdout = writer
 +
 +	go func() {
 +		defer reader.Close()
-+
+ 
+-	defer imageReader.Close()
 +		if err := untar(reader, tmpPath); err != nil {
 +			logger.Fatalf("Could not save Docker image: could not untar [%s]: %v", imageName, err)
 +		}
 +	}()
-+	
+ 
+-	if err = untar(imageReader, tmpPath); err != nil {
+-		logger.Fatalf("Could not save Docker image: could not untar [%s]: %v", imageName, err)
 +	if err := cmd.Run(); err != nil {
 +		logger.Fatalf("Could not run the podman command: %s\n", err)
  	}
@@ -72,9 +78,44 @@ diff -ruN clair-scanner.orig/docker.go clair-scanner/docker.go
  	}
  	return layers
  }
+diff -ruN clair-scanner.orig/go.mod clair-scanner/go.mod
+--- clair-scanner.orig/go.mod	2022-01-01 20:08:22.551401259 +0800
++++ clair-scanner/go.mod	2022-01-01 20:56:44.441358569 +0800
+@@ -5,7 +5,7 @@
+ require (
+ 	github.com/Microsoft/go-winio v0.4.5
+ 	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a
+-	github.com/coreos/clair v2.0.7+incompatible
++	github.com/quay/clair/v2 v2.1.7
+ 	github.com/coreos/pkg v0.0.0-20160727233714-3ac0863d7acf
+ 	github.com/davecgh/go-spew v1.1.0
+ 	github.com/docker/distribution v2.6.2+incompatible
+@@ -18,7 +18,7 @@
+ 	github.com/julienschmidt/httprouter v1.1.0
+ 	github.com/mattn/go-runewidth v0.0.2
+ 	github.com/mattn/goveralls v0.0.6 // indirect
+-	github.com/matttproud/golang_protobuf_extensions v1.0.0
++	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
+ 	github.com/mbndr/logo v0.0.0-20170922150818-2cf79af92583
+ 	github.com/olekukonko/tablewriter v0.0.0-20180105111133-96aac992fc8b
+ 	github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
+diff -ruN clair-scanner.orig/go.sum clair-scanner/go.sum
+--- clair-scanner.orig/go.sum	2022-01-01 20:08:22.551401259 +0800
++++ clair-scanner/go.sum	2022-01-01 20:57:33.651357845 +0800
+@@ -2,8 +2,8 @@
+ github.com/Microsoft/go-winio v0.4.5/go.mod h1:VhR8bwka0BXejwEJY73c50VrPtXAaKcyvVC4A4RozmA=
+ github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a h1:BtpsbiV638WQZwhA98cEZw2BsbnQJrbd0BI7tsy0W1c=
+ github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
+-github.com/coreos/clair v2.0.7+incompatible h1:QSVlcTAPQyM+FrjbviZF9rDDpUKT3UERwd8EA7FW8X0=
+-github.com/coreos/clair v2.0.7+incompatible/go.mod h1:uXhHPWAoRqw0jJc2f8RrPCwRhIo9otQ8OEWUFtpCiwA=
++github.com/quay/clair/v2 v2.1.7 h1:fzabPWuoJtq4Rn1brounXKEcXTBlmVZwMx6LkF7R83g=
++github.com/quay/clair/v2 v2.1.7/go.mod h1:W98TX5hlrJA0+InaAtyM0R7x8e5SVonTSTj/Pj7ZGiY=
+ github.com/coreos/pkg v0.0.0-20160727233714-3ac0863d7acf h1:CAKfRE2YtTUIjjh1bkBtyYFaUT/WmOqsJjgtihT0vMI=
+ github.com/coreos/pkg v0.0.0-20160727233714-3ac0863d7acf/go.mod h1:E3G3o1h8I7cfcXa63jLwjI0eiQQMgzzUDFVpN/nH/eA=
+ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 diff -ruN clair-scanner.orig/utils.go clair-scanner/utils.go
---- clair-scanner.orig/utils.go	2021-12-17 12:03:34.079703781 +0800
-+++ clair-scanner/utils.go	2021-12-17 15:49:38.615185447 +0800
+--- clair-scanner.orig/utils.go	2022-01-01 20:08:22.551401259 +0800
++++ clair-scanner/utils.go	2022-01-01 20:54:44.781360329 +0800
 @@ -66,23 +66,34 @@
  		}
  
@@ -123,15 +164,3 @@ diff -ruN clair-scanner.orig/utils.go clair-scanner/utils.go
  			return err
  		}
  	}
-diff -ruN clair-scanner.orig/go.mod clair-scanner/go.mod
---- clair-scanner.orig/go.mod
-+++ clair-scanner/go.mod
-@@ -18,7 +18,7 @@ require (
- 	github.com/julienschmidt/httprouter v1.1.0
- 	github.com/mattn/go-runewidth v0.0.2
- 	github.com/mattn/goveralls v0.0.6 // indirect
--	github.com/matttproud/golang_protobuf_extensions v1.0.0
-+	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369
- 	github.com/mbndr/logo v0.0.0-20170922150818-2cf79af92583
- 	github.com/olekukonko/tablewriter v0.0.0-20180105111133-96aac992fc8b
- 	github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
