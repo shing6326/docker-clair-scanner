@@ -1,3 +1,6 @@
 [submodule "clair-scanner"]
 	path = clair-scanner
 	url = https://github.com/arminc/clair-scanner.git
+[submodule "clair-local-scan"]
+	path = clair-local-scan
+	url = https://github.com/arminc/clair-local-scan.git
