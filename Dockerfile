@@ -25,4 +25,5 @@ RUN apk update && \
     mkdir -p /var/log/supervisor && \
     supervisord -c /etc/supervisord.conf --pidfile=/tmp/supervisord.pid && \
     /tmp/check.sh && \
-    kill $(cat /tmp/supervisord.pid)
+    kill $(cat /tmp/supervisord.pid) && \
+    sed -i -e '/updater:/Q' /config/config.yaml
