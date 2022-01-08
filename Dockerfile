@@ -21,6 +21,7 @@ COPY --from=clair-scanner-builder /go/src/clair-scanner/clair-scanner /usr/local
 COPY gitlab-report-converter /usr/local/bin/
 RUN apk update && \
     apk add --no-cache supervisor git rpm xz python3 py3-pip py3-requests podman fuse-overlayfs shadow slirp4netns && \
+    sed -i -e 's|#mount_program = |mount_program = |g' /etc/containers/storage.conf && \
     chmod 755 /usr/local/bin/start_clair.sh && \
     sed -i -e 's|host=postgres|host=127.0.0.1|g' -e 's|password=password ||g' /config/config.yaml && \
     mkdir -p /var/log/supervisor && \
