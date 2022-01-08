@@ -8,6 +8,7 @@ do
     cat /var/log/supervisor/clair-stdout* | grep "update finished" >& /dev/null
     if [ $? == 0 ]; then
         echo "done"
+	grep -F "Level":"info" -v /var/log/supervisor/clair-stdout*
         break
     fi
 
