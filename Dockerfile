@@ -27,4 +27,4 @@ RUN apk update && \
     supervisord -c /etc/supervisord.conf --pidfile=/tmp/supervisord.pid && \
     /tmp/check.sh && \
     kill $(cat /tmp/supervisord.pid) && \
-    sed -i -e '/updater:/Q' /config/config.yaml
+    sed -i -e '/  updater:/,$d' /config/config.yaml
