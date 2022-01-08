@@ -18,6 +18,12 @@ do
         exit 1
     fi
 
+    cat /var/log/supervisor/clair-stderr* | grep '.*'
+    if [ $? == 0 ]; then
+        echo "Error during update." >&2
+        exit 1
+    fi
+
     echo -n .
     sleep 10
     ((COUNTER++))

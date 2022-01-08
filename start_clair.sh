@@ -1,6 +1,6 @@
 #!/bin/sh
 
-while ! pg_isready --username=postgres; do 
+while ! pg_isready; do
   sleep 1
 done
 
