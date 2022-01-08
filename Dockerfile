@@ -28,4 +28,5 @@ RUN apk update && \
     mkdir -p /var/log/supervisor && \
     supervisord -c /etc/supervisord.conf && \
     /tmp/check.sh && \
-    rm -rf /var/log/supervisor/*
+    rm -rf /var/log/supervisor/* && \
+    sed -i -e 's|interval: 2h|interval: 0|g' /config/config.yaml
