@@ -27,5 +27,4 @@ RUN apk update && \
     sed -i -e 's|host=postgres|host=127.0.0.1|g' -e 's|password=password ||g' /config/config.yaml && \
     mkdir -p /var/log/supervisor && \
     supervisord -c /etc/supervisord.conf && \
-    /tmp/check.sh && \
-    sed -i -e '/  updater:/,$d' /config/config.yaml
+    /tmp/check.sh
