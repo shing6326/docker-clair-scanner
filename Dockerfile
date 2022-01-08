@@ -10,6 +10,7 @@ RUN make build
 FROM quay.io/coreos/clair:v2.1.8 AS clair
 
 FROM docker.io/postgres:11.14-alpine
+ENV PGDATA=/var/lib/postgresql/clair
 ENV POSTGRES_PASSWORD=password
 COPY --from=clair /clair /clair
 COPY clair-local-scan/clair/config.yaml /config/config.yaml
