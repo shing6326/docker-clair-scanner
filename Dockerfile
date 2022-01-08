@@ -24,7 +24,6 @@ RUN apk update && \
     chmod 755 /usr/local/bin/start_clair.sh && \
     sed -i -e 's|host=postgres|host=127.0.0.1|g' -e 's|password=password ||g' /config/config.yaml && \
     mkdir -p /var/log/supervisor && \
-    supervisord -c /etc/supervisord.conf --pidfile=/tmp/supervisord.pid && \
+    supervisord -c /etc/supervisord.conf && \
     /tmp/check.sh && \
-    kill $(cat /tmp/supervisord.pid) && \
     sed -i -e '/  updater:/,$d' /config/config.yaml
