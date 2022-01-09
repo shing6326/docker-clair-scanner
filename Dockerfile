@@ -28,6 +28,6 @@ RUN apk update && \
     mkdir -p /var/log/supervisor && \
     supervisord -c /etc/supervisord.conf && \
     /tmp/check.sh && \
-    kill $(cat /tmp/supervisord.pid) && \
-    rm -rf /var/log/supervisor/* && \
+    pg_ctl -D "$PGDATA" -m smart -w stop && \
+    rm -f /var/log/supervisor/* && \
     sed -i -e 's|interval: 2h|interval: 0|g' /config/config.yaml
