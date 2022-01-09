@@ -26,9 +26,10 @@ RUN apk update && \
     chmod 755 /usr/local/bin/start_clair.sh && \
     sed -i -e 's|host=postgres|host=127.0.0.1|g' /config/config.yaml && \
     mkdir -p /var/log/supervisor && \
-    supervisord -c /etc/supervisord.conf && \
+    echo "starting supervisord and services" && supervisord -c /etc/supervisord.conf && \
     /tmp/check.sh && \
-    su - postgres -c "pg_ctl -D $PGDATA -m fast -w stop" && \
-    pkill supervisord && \
+    echo "stopping clair" && pkill clair && while $(pkill -0 clair 2>/dev/null); do sleep 1 ;done || true && \
+    echo "stopping postgres" && su - postgres -c "pg_ctl -D $PGDATA -m fast -w stop" || true && \
+    echo "stopping supervisord" && pkill supervisord && while $(pkill -0 supervisord 2>/dev/null); do sleep 1 ;done || true && \
     rm -f /var/log/supervisor/* && \
     sed -i -e 's|interval: 2h|interval: 0|g' /config/config.yaml
