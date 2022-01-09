@@ -28,7 +28,7 @@ RUN apk update && \
     mkdir -p /var/log/supervisor && \
     supervisord -c /etc/supervisord.conf && \
     /tmp/check.sh && \
-    su - postgres -c "pg_ctl -D $PGDATA -m smart -w stop" && \
+    su - postgres -c "pg_ctl -D $PGDATA -m fast -w stop" && \
     pkill supervisord && \
     rm -f /var/log/supervisor/* && \
     sed -i -e 's|interval: 2h|interval: 0|g' /config/config.yaml
