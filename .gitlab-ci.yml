@@ -5,7 +5,8 @@ build:
     GIT_SUBMODULE_STRATEGY: recursive
   script:
     - buildah login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - buildah bud -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE:latest .
+    - buildah bud -t $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE:$(date +%Y-%m-%d) -t $CI_REGISTRY_IMAGE:latest .
     - buildah push $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
     - buildah push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - buildah push $CI_REGISTRY_IMAGE:$(date +%Y-%m-%d)
     - buildah push $CI_REGISTRY_IMAGE:latest

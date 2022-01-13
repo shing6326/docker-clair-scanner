@@ -27,7 +27,7 @@ jobs:
           install: true
 
       - name: Build image
-        run: docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${GITHUB_SHA} -t ${IMAGE_NAME}:$(date +%Y-%m-%d) .
+        run: docker build -t ${IMAGE_NAME}:${GITHUB_REF##*/} -t ${IMAGE_NAME}:${GITHUB_SHA:0:8} -t ${IMAGE_NAME}:$(date +%Y-%m-%d) -t ${IMAGE_NAME}:latest .
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
@@ -36,6 +36,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Push images
         run: |
-          docker push ${IMAGE_NAME}:latest
-          docker push ${IMAGE_NAME}:${GITHUB_SHA}
+          docker push ${IMAGE_NAME}:${GITHUB_REF##*/}
+          docker push ${IMAGE_NAME}:${GITHUB_SHA:0:8}
           docker push ${IMAGE_NAME}:$(date +%Y-%m-%d)
+          docker push ${IMAGE_NAME}:latest
